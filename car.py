@@ -3,7 +3,6 @@ import sys
 import time
 import math
 import copy
-import ast
 import numpy as np
 from nn_model import NeuralNetwork
 from nn_model import mutate_weights
@@ -97,7 +96,6 @@ class Car:
             self.time += 1
             self.sum_speed[1] += 1
             self.sum_speed[0].append(self.speed)
-        # print(self.time, self.distance)
 
         # corners check, assume its square because I hate trigonometry
         length = 0.5 * car_size[0]
@@ -173,6 +171,7 @@ neural_networks = [NeuralNetwork(5, 6, 4) for _ in range(population_size)]
 best_neural_network = NeuralNetwork(5, 6, 4)
 distances = [2000, 0]
 mutation_strength = 0.01
+mutation_rate = 0.05
 
 
 # def tournament_selection(fitness_scores, k):
@@ -199,11 +198,10 @@ mutation_strength = 0.01
 def select_neural_networks(cars, networks):
     fitness_scores = [(cars[i].get_distance(), networks[i]) for i in range(population_size)]
     fitness_scores.sort(key=lambda x: x[0], reverse=True)
-    # print(fitness_scores[0][0], fitness_scores[1][0], fitness_scores[2][0])
     return [i[1] for i in fitness_scores]
 
 
-def create_child_networks(chosen_nn, mutation_strength):
+def create_child_networks(chosen_nn, mutation_rate, mutation_strength):
     new_neural_networks = []
 
     num_chosen = 30
@@ -216,7 +214,7 @@ def create_child_networks(chosen_nn, mutation_strength):
 
     for i in range(population_size):
         weights = new_neural_networks[i].get_weights()
-        mutation = mutate_weights(weights, 0.05, mutation_strength)
+        mutation = mutate_weights(weights, mutation_rate, mutation_strength)
         new_neural_networks[i].set_weights(mutation)
     return new_neural_networks
 
@@ -235,6 +233,7 @@ def run_simulation():
     global best_neural_network
     global distances
     global mutation_strength
+    global mutation_rate
     font = pygame.font.SysFont('Arial', 24)
 
     # initialize cars and neural networks
@@ -266,7 +265,6 @@ def run_simulation():
         for car in cars:
             if car.is_alive():
                 speed.append(car.speed)
-        # print(max(speed))
         if still_alive == 0 or current_time > max_simulation_time or (current_time > 3 and max(speed) < 1):
             break
 
@@ -293,29 +291,27 @@ def run_simulation():
         if car.get_distance() > b:
             b = car.get_distance()
             maxa = c
-    # print(neural_networks[maxa].debug_forward_pass())
-    # print(cars[maxa].get_time(),cars[maxa].get_speed(), cars[maxa].get_distance())
-    print(mutation_strength)
+
     current_distances = []
     for car in cars:
         current_distances.append(car.get_distance())
 
-    if max(current_distances) - max(distances) < 2:
+    print(max(current_distances), max(distances))
+    print(max(current_distances) - max(distances))
+    if max(current_distances) - max(distances) < 10:
         if mutation_strength < 20:
             mutation_strength *= 1.4
-        distances = current_distances.copy()
-    elif mutation_strength > 0.05:
-        distances = current_distances.copy()
+            mutation_rate += 0.03
+    else:
         mutation_strength = 0.01
-    # print(mutation_strength)
-    # print(neural_networks[0].get_weights())
+        mutation_rate = 0.05
+    distances = current_distances.copy()
+
+    print(round(mutation_strength, 2), round(mutation_rate, 2))
+
+
     chosen_nn = select_neural_networks(cars, neural_networks)
-    # print(f'car: {cars[2].get_distance()}, nn: {neural_networks[2].get_weights()}')
-    print('max car: ' + str(max([car.get_distance() for car in cars])))
-    # for i in range(len(cars)):
-    #     if cars[i].get_distance() == max([car.get_distance() for car in cars]):
-    #         print(f'max nn: {neural_networks[i].get_weights()}')
-    neural_networks = create_child_networks(chosen_nn, mutation_strength)
+    neural_networks = create_child_networks(chosen_nn, mutation_rate, mutation_strength)
     best_neural_network = neural_networks[0]
     current_generation += 1
 
