@@ -14,8 +14,8 @@ red = (100, 0, 0)
 BorderColor = (255, 255, 255)
 
 win = pygame.display.set_mode((1920, 1080))
-# win = pygame.display.set_mode((1120, 1080))
 bg = pygame.image.load('track3.png')
+
 
 class Car:
     def __init__(self):
@@ -25,7 +25,6 @@ class Car:
         self.position = [960, 950]
         self.angle = 90
         self.speed = 0
-
 
         self.corners = []  # position of corners
         self.alive = True
@@ -37,7 +36,7 @@ class Car:
         self.sum_speed = [[], 0]
 
     def rotate(self, direction):  # True left, False right
-        angle = 1.8
+        angle = 2.5
         if not direction:
             angle = -angle
         self.angle += angle
@@ -46,11 +45,11 @@ class Car:
     def accelerate(self, direction):  # True forward, False backward
         speed = 0.1
         if direction:
-            if self.speed < 6:
+            if self.speed < 4:
                 self.speed += speed
         else:
             if self.speed > 0:
-                self.speed -= speed
+                self.speed -= speed * 2
         self.move()
 
     def move(self):
@@ -156,12 +155,12 @@ class Car:
         return self.time
 
     def get_speed(self):
-        return sum(self.sum_speed[0]) / len(self.sum_speed[0])
-        # return self.speed
+        # return sum(self.sum_speed[0]) / len(self.sum_speed[0])
+        return self.speed
 
     def get_distance(self):
-        return (sum(self.sum_speed[0]) * 0.4 / len(self.sum_speed[0])) * self.time
-        # return self.distance
+        # return (sum(self.sum_speed[0]) * 0.4 / len(self.sum_speed[0])) * self.time
+        return self.distance
 
 
 # initialize global variables
@@ -285,19 +284,10 @@ def run_simulation():
         pygame.display.flip()
         clock.tick(60)
 
-    maxa = 0
-    b = 0
-    for c, car in enumerate(cars):
-        if car.get_distance() > b:
-            b = car.get_distance()
-            maxa = c
-
     current_distances = []
     for car in cars:
         current_distances.append(car.get_distance())
 
-    print(max(current_distances), max(distances))
-    print(max(current_distances) - max(distances))
     if max(current_distances) - max(distances) < 10:
         if mutation_strength < 20:
             mutation_strength *= 1.4
@@ -306,9 +296,6 @@ def run_simulation():
         mutation_strength = 0.01
         mutation_rate = 0.05
     distances = current_distances.copy()
-
-    print(round(mutation_strength, 2), round(mutation_rate, 2))
-
 
     chosen_nn = select_neural_networks(cars, neural_networks)
     neural_networks = create_child_networks(chosen_nn, mutation_rate, mutation_strength)
@@ -363,5 +350,4 @@ f = open('best_weight.txt', 'r')
 x = f.read()
 while True:
     run_track(eval(x, {"array": np.array}))
-
 
