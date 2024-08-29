@@ -12,11 +12,12 @@ def mutate_weights(weights_and_biases, mutation_rate, mutation_strength):
     return mutated_weights_and_biases
 
 
+def relu(x):
+    return np.maximum(0, x)
+
+
 def sigmoid(x):
     x = np.clip(x, -709, 709)
-    # print(x)
-    # print("--------------------------------")
-    # print(1 / (1 + np.exp(-x)))
     return 1 / (1 + np.exp(-x))
 
 
@@ -42,7 +43,7 @@ class NeuralNetwork:
 
     def forward_pass(self, data):
         self.hidden_layer_prepare = np.dot(data, self.weights_input_hidden) + self.bias_input_hidden
-        self.hidden_layer_output = sigmoid(self.hidden_layer_prepare)
+        self.hidden_layer_output = relu(self.hidden_layer_prepare)
 
         self.output_layer_prepare = np.dot(self.hidden_layer_output, self.weights_hidden_output) + self.bias_hidden_output
         self.output_layer_output = sigmoid(self.output_layer_prepare)
@@ -67,25 +68,6 @@ class NeuralNetwork:
         self.bias_hidden_output = weight_and_biases[3]
 
     def debug_forward_pass(self):
-
-        # print("Hidden Layer 1 Output:", self.hidden_layer_output)
-        # print("Output Layer Output:", self.output_layer_output)
         print("Binary Output:", self.output_layer_output)
-
-# nn = NeuralNetwork(4,  4, 4)
-#
-# nn.forward_pass([4,5,6,7])
-# print("--------------------------------")
-# print(nn.get_weights())
-# mutated_weights = mutate_weights(nn.get_weights(), 0.2, 0.2)
-# nn.set_weights(mutated_weights)
-# nn.forward_pass([4,5,6,7])
-# print(nn.get_weights())
-# print("--------------------------------")
-# mutated_weights = mutate_weights(nn.get_weights(), 0.2, 0.2)
-# nn.set_weights(mutated_weights)
-# # print(nn.get_weights())
-# nn.forward_pass([4,5,6,7])
-# nn.debug_forward_pass([4,5,6,7])
 
 

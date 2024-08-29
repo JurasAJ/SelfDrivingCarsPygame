@@ -267,7 +267,6 @@ def run_simulation():
         if still_alive == 0 or current_time > max_simulation_time or (current_time > 3 and max(speed) < 1):
             break
 
-
         # cars are taking actions
         for i, car in enumerate(cars):
             data = car.get_data()
